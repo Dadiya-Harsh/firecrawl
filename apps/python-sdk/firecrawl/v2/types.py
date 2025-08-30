@@ -599,26 +599,6 @@ class SearchRequest(BaseModel):
         
         return normalized_categories
 
-    @field_validator('parsers')
-    @classmethod
-    def validate_parsers(cls, v):
-        """Validate and normalize parsers input."""
-        if v is None:
-            return v
-        
-        normalized_parsers = []
-        for parser in v:
-            if isinstance(parser, str):
-                normalized_parsers.append(parser)
-            elif isinstance(parser, dict):
-                normalized_parsers.append(PDFParser(**parser))
-            elif isinstance(parser, PDFParser):
-                normalized_parsers.append(parser)
-            else:
-                raise ValueError(f"Invalid parser format: {parser}")
-        
-        return normalized_parsers
-
 class LinkResult(BaseModel):
     """A generic link result with optional metadata (used by search and map)."""
     url: str
@@ -690,7 +670,7 @@ class ActiveCrawlsResponse(BaseModel):
 # Configuration types
 class ClientConfig(BaseModel):
     """Configuration for the Firecrawl client."""
-    api_key: str
+    api_key: Optional[str] = None
     api_url: str = "https://api.firecrawl.dev"
     timeout: Optional[float] = None
     max_retries: int = 3

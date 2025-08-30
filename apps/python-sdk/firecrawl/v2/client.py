@@ -78,7 +78,10 @@ class FirecrawlClient:
         if api_key is None:
             api_key = os.getenv("FIRECRAWL_API_KEY")
         
-        if not api_key:
+        # Allow local connections without API key
+        is_local = api_url and any(local_host in api_url.lower() for local_host in ['localhost', '127.0.0.1', '0.0.0.0'])
+        
+        if not api_key and not is_local:
             raise ValueError(
                 "API key is required. Set FIRECRAWL_API_KEY environment variable "
                 "or pass api_key parameter."
