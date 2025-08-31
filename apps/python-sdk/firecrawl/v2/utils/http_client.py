@@ -47,7 +47,7 @@ class HttpClient:
         
         # Only add Authorization header if api_key is provided and not empty/whitespace
         if self.api_key and self.api_key.strip():
-            headers['Authorization'] = f'Bearer {self.api_key}'
+            headers['Authorization'] = f'Bearer {self.api_key.strip()}'
         
         if idempotency_key:
             headers['x-idempotency-key'] = idempotency_key
