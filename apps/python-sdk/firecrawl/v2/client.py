@@ -6,6 +6,7 @@ This module provides the main client class that orchestrates all v2 functionalit
 
 import os
 from typing import Optional, List, Dict, Any, Callable, Union, Literal
+from urllib.parse import urlparse
 from .types import (
     ClientConfig,
     ScrapeOptions,
@@ -79,7 +80,15 @@ class FirecrawlClient:
             api_key = os.getenv("FIRECRAWL_API_KEY")
         
         # Allow local connections without API key
-        is_local = api_url and any(local_host in api_url.lower() for local_host in ['localhost', '127.0.0.1', '0.0.0.0'])
+        is_local = False
+        if api_url:
+            try:
+                parsed_url = urlparse(api_url)
+                local_hosts = ['localhost', '127.0.0.1', '0.0.0.0']
+                is_local = parsed_url.hostname in local_hosts
+            except Exception:
+                # If URL parsing fails, fall back to requiring API key
+                is_local = False
         
         if not api_key and not is_local:
             raise ValueError(

@@ -45,8 +45,8 @@ class HttpClient:
             'Content-Type': 'application/json',
         }
         
-        # Only add Authorization header if api_key is provided
-        if self.api_key:
+        # Only add Authorization header if api_key is provided and not empty/whitespace
+        if self.api_key and self.api_key.strip():
             headers['Authorization'] = f'Bearer {self.api_key}'
         
         if idempotency_key:
