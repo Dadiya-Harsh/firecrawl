@@ -4,7 +4,7 @@ This template provides an easy way to spin up a UI for Firecrawl using React. It
 
 ## ⚠️ Important Security Notice
 
-**This template exposes Firecrawl API keys in the client-side code. For production use, it is strongly recommended to move API interactions to a server-side implementation to protect your API keys.**
+**This template now uses environment variables for API configuration. For production use, it is still strongly recommended to move API interactions to a server-side implementation to protect your API keys.**
 
 ## Prerequisites
 
@@ -15,15 +15,22 @@ This template provides an easy way to spin up a UI for Firecrawl using React. It
 
 1. Install dependencies:
 
-   ```
+   ```bash
    npm install
    ```
 
-2. Set up your Firecrawl API key:
-   Open `src/components/ingestion.tsx` and replace the placeholder API key:
+2. Set up your environment variables:
+   Copy the example environment file and configure your API settings:
 
-   ```typescript
-   const FIRECRAWL_API_KEY = "your-api-key-here";
+   ```bash
+   cp env.example .env
+   ```
+
+   Then edit `.env` with your actual values:
+
+   ```env
+   FIRECRAWL_API_URL=http://localhost:3002
+   FIRECRAWL_API_KEY=your-api-key-here
    ```
 
 3. Start the development server:
@@ -34,9 +41,26 @@ This template provides an easy way to spin up a UI for Firecrawl using React. It
 
 4. Open your browser and navigate to the port specified in your terminal
 
+## Environment Variables
+
+The following environment variables are supported:
+
+- `FIRECRAWL_API_URL`: Your Firecrawl API server URL (local or hosted)
+- `FIRECRAWL_API_KEY`: Your Firecrawl API key
+
+These variables are loaded from:
+1. `.env` file in the project root
+2. `.env` file in the parent directory (apps/ui/)
+3. `.env` file in the root project directory
+4. `.env` file in the apps/api/ directory
+
 ## Customization
 
-The main Firecrawl component is located in `src/components/ingestion.tsx`. You can modify this file to customize the UI or add additional features.
+The main Firecrawl components are located in:
+- `src/components/ingestion.tsx` - V0 API implementation
+- `src/components/ingestionV1.tsx` - V1 API implementation
+
+You can modify these files to customize the UI or add additional features.
 
 ## Security Considerations
 
