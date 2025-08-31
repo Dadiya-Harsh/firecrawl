@@ -10,13 +10,9 @@ class AsyncHttpClient:
         self.api_key = api_key
         self.api_url = api_url
         
-        headers = {"Content-Type": "application/json"}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
-            
         self._client = httpx.AsyncClient(
             base_url=api_url,
-            headers=headers,
+            headers={"Content-Type": "application/json"},
             limits=httpx.Limits(max_keepalive_connections=0),
         )
 
@@ -25,6 +21,11 @@ class AsyncHttpClient:
 
     def _headers(self, idempotency_key: Optional[str] = None) -> Dict[str, str]:
         headers: Dict[str, str] = {}
+        
+        # Only add Authorization header if api_key is provided and not empty/whitespace
+        if self.api_key and self.api_key.strip():
+            headers["Authorization"] = f"Bearer {self.api_key.strip()}"
+            
         if idempotency_key:
             headers["x-idempotency-key"] = idempotency_key
         return headers
