@@ -38,15 +38,46 @@ class HttpClient:
             path = ep2.path or "/"
             return urlunparse((base.scheme or "https", base.netloc, path, "", ep2.query, ""))
         return urljoin(base_str, endpoint)
+
+    def _is_same_host(self, endpoint: str) -> bool:
+        """
+        Check if the endpoint targets the same host as the API base URL.
+        
+        Args:
+            endpoint: The endpoint to check (can be relative or absolute)
+            
+        Returns:
+            True if the endpoint targets the same host as the API base URL
+            
+        Note:
+            This method compares hostnames only (ignoring ports and protocols).
+            Edge cases:
+            - IPv4 vs hostname: "127.0.0.1" vs "localhost" will not match
+            - Ports are ignored: "api.firecrawl.dev:443" vs "api.firecrawl.dev:8080" will match
+            - Bare hostnames without scheme are treated as relative endpoints
+        """
+        # For relative endpoints, they target the same host as the base URL
+        if not endpoint.startswith(("http://", "https://")):
+            return True
+            
+        # For absolute endpoints, compare hostnames
+        try:
+            parsed_target = urlparse(endpoint)
+            target_host = (parsed_target.hostname or "").rstrip(".").lower()
+            base_host = (urlparse(self.api_url).hostname or "").rstrip(".").lower()
+            return target_host == base_host
+        except Exception:
+            # If parsing fails, assume it's not the same host for safety
+            return False
     
-    def _prepare_headers(self, idempotency_key: Optional[str] = None) -> Dict[str, str]:
+    def _prepare_headers(self, endpoint: str, idempotency_key: Optional[str] = None) -> Dict[str, str]:
         """Prepare headers for API requests."""
         headers = {
             'Content-Type': 'application/json',
         }
         
-        # Only add Authorization header if api_key is provided and not empty/whitespace
-        if self.api_key and self.api_key.strip():
+        # Only add Authorization header if api_key is provided, not empty/whitespace, and same host
+        if self.api_key and self.api_key.strip() and self._is_same_host(endpoint):
             headers['Authorization'] = f'Bearer {self.api_key.strip()}'
         
         if idempotency_key:
@@ -65,7 +96,7 @@ class HttpClient:
     ) -> requests.Response:
         """Make a POST request with retry logic."""
         if headers is None:
-            headers = self._prepare_headers()
+            headers = self._prepare_headers(endpoint)
 
         data['origin'] = f'python-sdk@{version}'
             
@@ -108,7 +139,7 @@ class HttpClient:
     ) -> requests.Response:
         """Make a GET request with retry logic."""
         if headers is None:
-            headers = self._prepare_headers()
+            headers = self._prepare_headers(endpoint)
 
         url = self._build_url(endpoint)
         
@@ -148,7 +179,7 @@ class HttpClient:
     ) -> requests.Response:
         """Make a DELETE request with retry logic."""
         if headers is None:
-            headers = self._prepare_headers()
+            headers = self._prepare_headers(endpoint)
             
         url = self._build_url(endpoint)
         
